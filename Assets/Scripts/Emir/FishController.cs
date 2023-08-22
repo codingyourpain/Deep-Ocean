@@ -19,35 +19,44 @@ public class FishController : MonoBehaviour
     void Update()
     {
         
-        TouchMove(rb,1);
+        TouchMove(rb,10);
     }
     void TouchMove(Rigidbody2D rb, float moveSpeed){
         if (Input.touchCount > 0){
             Debug.Log(1);
             Touch touch = Input.GetTouch(0);
-            if (touch.phase == TouchPhase.Moved){
-                Debug.Log(2);
-                Vector3 touchPosition = Camera.main.ScreenToWorldPoint(touch.position);
-                touchPosition.z = 0;
-                Vector3 direction = (touchPosition - transform.position).normalized;
-                rb.velocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed);
-            }
+            Debug.Log(2);
+            Vector3 touchPosition = Camera.main.ScreenToWorldPoint(touch.position);
+            touchPosition.z = 0;
+            MoveFish(touchPosition,moveSpeed);
             
         }
         else if (Input.GetMouseButton(0)) {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePosition.z = 0;
             //rb.MovePosition(mousePosition);
-            Vector3 direction = (mousePosition - transform.position).normalized;
-            rb.velocity = new Vector2(direction.x * moveSpeed, direction.y * moveSpeed);
+            MoveFish(mousePosition,moveSpeed);
         }
-        else rb.velocity = Vector2.zero;
+        else rb.velocity = Vector2.Lerp(
+            rb.velocity,
+            Vector2.zero,
+            Time.deltaTime
+        );
     }
+    void MoveFish(Vector3 touchPosition, float moveSpeed){
+        Vector3 direction = (touchPosition - transform.position).normalized;
+        rb.velocity = Vector2.Lerp(
+            rb.velocity,
+            Vector2.right * direction.x * moveSpeed + Vector2.up * direction.y * moveSpeed,
+            Time.deltaTime
+        );
+        /*
+        Quaternion rotation = Quaternion.LookRotation(transform.position + direction);
+        rotation.x = 0;rotation.y = 0;
 
-    private Vector3 GetMouseWorldPosition()
-    {
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = -Camera.main.transform.position.z;
-        return Camera.main.ScreenToWorldPoint(mousePos);
+        // Rotate the object.
+        transform.rotation = rotation;
+        */
+        rb.MoveRotation(rb.rotation + moveSpeed * -direction.x * 100 * Time.deltaTime);
     }
 }
